@@ -1,0 +1,78 @@
+{
+  "name": "oh-tools",
+  "displayName": "OH-Tools",
+  "description": "",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.98.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "oh-tools.getSingleTest",
+        "title": "Get single Gtest"
+      },
+      {
+        "command": "oh-tools.sortAtoZ",
+        "title": "sortAtoZ"
+      },
+      {
+        "command": "oh-tools.sortZtoA",
+        "title": "sortZtoA"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "submenu": "OhToolMenu",
+          "group": "navigation",
+          "when": "editorFocus"
+        }
+      ],
+      "OhToolMenu": [
+        {
+          "command": "oh-tools.getSingleTest",
+          "group": "group1"
+        },
+        {
+          "command": "oh-tools.sortAtoZ",
+          "group": "group2"
+        },
+        {
+          "command": "oh-tools.sortZtoA",
+          "group": "group2"
+        }
+      ]
+    },
+    "submenus": [
+      {
+        "id": "OhToolMenu",
+        "label": "OHTools"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.98.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@typescript-eslint/eslint-plugin": "^8.17.0",
+    "@typescript-eslint/parser": "^8.17.0",
+    "eslint": "^9.16.0",
+    "typescript": "^5.7.2",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1"
+  }
+}
