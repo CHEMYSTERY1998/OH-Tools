@@ -24,6 +24,16 @@
       {
         "command": "oh-tools.sortZtoA",
         "title": "sortZtoA"
+      },
+      {
+        "command": "oh-tools.getPathLineNum",
+        "title": "获取文件行号(相对路径)",
+        "category": "OhToolMenu"
+      },
+      {
+        "command": "oh-tools.getLineNum",
+        "title": "获取文件行号",
+        "category": "OhToolMenu"
       }
     ],
     "menus": {
@@ -37,6 +47,14 @@
       "OhToolMenu": [
         {
           "command": "oh-tools.getSingleTest",
+          "group": "group1"
+        },
+        {
+          "command": "oh-tools.getPathLineNum",
+          "group": "group1"
+        },
+        {
+          "command": "oh-tools.getLineNum",
           "group": "group1"
         },
         {

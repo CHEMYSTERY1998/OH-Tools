@@ -16,6 +16,20 @@ export function getCurrentLineText(): string | undefined {
     return currentLine.text; // 返回当前行的文本
 }
 
+export function getCurrentLineNum(useRelativePath: boolean = false): string | undefined {
+    const editor = vscode.window.activeTextEditor;
+    if (!editor) {
+        return undefined;
+    }
+    const document = editor.document;
+    const selection = editor.selection;
+    const currentLine = document.lineAt(selection.active.line);
+    const filePath = useRelativePath
+        ? vscode.workspace.asRelativePath(document.fileName)
+        : document.fileName.split('\\').pop(); // 仅获取文件名
+    return filePath + ":" + currentLine.lineNumber.toString();
+}
+
 export function activate(context: vscode.ExtensionContext) {
     console.log('Congratulations, your extension "oh-tools" is now active!');
 
@@ -33,12 +47,34 @@ export function activate(context: vscode.ExtensionContext) {
             return;
         }
         const [, testClassName, testName, testLevel] = match; // 使用数组解构将三个组存储到变量中
-        const testCmd = `./testClassName --gtest_filter=${testClassName}.${testName}`;
+        const testCmd = `--gtest_filter=${testClassName}.${testName}`;
         vscode.env.clipboard.writeText(testCmd).then(() => {
             vscode.window.showInformationMessage('命令已复制到剪贴板！');
         })
     });
 
+    // 获取当前活动行号
+    const getLineNum = vscode.commands.registerCommand('oh-tools.getLineNum', () => {
+        const currentLineNum =getCurrentLineNum(false); // 获取当前行号
+        if (currentLineNum === undefined) {
+            vscode.window.showInformationMessage('未找到活动编辑器。');
+            return;
+        }
+        vscode.env.clipboard.writeText(currentLineNum).then(() => {
+            vscode.window.showInformationMessage('文件所在行已复制到剪贴板！');
+        })
+    });
+
+    const getPathLineNum = vscode.commands.registerCommand('oh-tools.getPathLineNum', () => {
+        const currentLineNum =getCurrentLineNum(true); // 获取当前行号
+        if (currentLineNum === undefined) {
+            vscode.window.showInformationMessage('未找到活动编辑器。');
+            return;
+        }
+        vscode.env.clipboard.writeText(currentLineNum).then(() => {
+            vscode.window.showInformationMessage('文件所在行已复制到剪贴板！');
+        })
+    });
 
     // @command:editor.action.sortLinesAscending
     const sortAtoZ = vscode.commands.registerCommand('oh-tools.sortAtoZ', () => {
@@ -55,7 +91,7 @@ export function activate(context: vscode.ExtensionContext) {
         })
     })
 
-    context.subscriptions.push(getSingleTest, sortAtoZ, sortZtoA);
+    context.subscriptions.push(getSingleTest, sortAtoZ, sortZtoA, getLineNum, getPathLineNum);
 }
 
 export function deactivate() {}
