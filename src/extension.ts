@@ -21,12 +21,15 @@ export function getCurrentLineNum(useRelativePath: boolean = false): string | un
     if (!editor) {
         return undefined;
     }
-    const document = editor.document;
+    var separator = "\\";
+    if (platform() !== "win32") {
+        separator = "/";
+    }
+    const document = editor.document; // 当前文档
+    const fileName = editor.document.fileName.split(separator).pop();
     const selection = editor.selection;
     const currentLine = document.lineAt(selection.active.line);
-    const filePath = useRelativePath
-        ? vscode.workspace.asRelativePath(document.fileName)
-        : document.fileName.split('\\').pop(); // 仅获取文件名
+    const filePath = useRelativePath ? vscode.workspace.asRelativePath(document.fileName) : fileName;
     return filePath + ":" + currentLine.lineNumber.toString();
 }
 
