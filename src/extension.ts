@@ -1,4 +1,7 @@
 import * as vscode from 'vscode';
+import {platform} from "os";
+
+import { processCallStack } from './utils';
 
 /**
  * 获取当前活动编辑器中光标所在行的文本内容
@@ -21,7 +24,7 @@ export function getCurrentLineNum(useRelativePath: boolean = false): string | un
     if (!editor) {
         return undefined;
     }
-    var separator = "\\";
+    let separator = "\\";
     if (platform() !== "win32") {
         separator = "/";
     }
@@ -53,7 +56,7 @@ export function activate(context: vscode.ExtensionContext) {
         const testCmd = `--gtest_filter=${testClassName}.${testName}`;
         vscode.env.clipboard.writeText(testCmd).then(() => {
             vscode.window.showInformationMessage('命令已复制到剪贴板！');
-        })
+        });
     });
 
     // 获取当前活动行号
@@ -65,7 +68,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
         vscode.env.clipboard.writeText(currentLineNum).then(() => {
             vscode.window.showInformationMessage('文件所在行已复制到剪贴板！');
-        })
+        });
     });
 
     const getPathLineNum = vscode.commands.registerCommand('oh-tools.getPathLineNum', () => {
@@ -76,7 +79,7 @@ export function activate(context: vscode.ExtensionContext) {
         }
         vscode.env.clipboard.writeText(currentLineNum).then(() => {
             vscode.window.showInformationMessage('文件所在行已复制到剪贴板！');
-        })
+        });
     });
 
     // @command:editor.action.sortLinesAscending
@@ -84,17 +87,22 @@ export function activate(context: vscode.ExtensionContext) {
         // 调用内置的降序排序命令
         vscode.commands.executeCommand('editor.action.sortLinesAscending').then(() => {
             vscode.window.showInformationMessage('已按行升序序排序！');
-        })
+        });
     });
     // @command:editor.action.sortLinesDescending
     const sortZtoA = vscode.commands.registerCommand('oh-tools.sortZtoA', () => {
         // 调用内置的降序排序命令
         vscode.commands.executeCommand('editor.action.sortLinesDescending').then(() => {
             vscode.window.showInformationMessage('已按行降序排序！');
-        })
+        });
+    });
+
+    // getline
+    const getCallLine = vscode.commands.registerCommand('oh-tools.getCallLine', () => {
+        processCallStack();
     })
 
-    context.subscriptions.push(getSingleTest, sortAtoZ, sortZtoA, getLineNum, getPathLineNum);
+    context.subscriptions.push(getSingleTest, sortAtoZ, sortZtoA, getLineNum, getPathLineNum, getCallLine);
 }
 
 export function deactivate() {}

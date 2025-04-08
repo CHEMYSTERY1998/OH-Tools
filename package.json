@@ -2,7 +2,7 @@
   "name": "oh-tools",
   "displayName": "OH-Tools",
   "description": "",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "engines": {
     "vscode": "^1.98.0"
   },
@@ -34,6 +34,11 @@
         "command": "oh-tools.getLineNum",
         "title": "获取文件行号",
         "category": "OhToolMenu"
+      },
+      {
+        "command": "oh-tools.getCallLine",
+        "title": "getCallLine",
+        "category": "getCallLine"
       }
     ],
     "menus": {
