@@ -1,7 +1,8 @@
 import * as vscode from 'vscode';
 
-import { getCurrentLineNum, getCurrentLineText } from './utils';
+import { getCurrentLineNum, getCurrentLineText, setCallInfoCommand } from './utils';
 import { processCallStack } from './callstack';
+import { getWebviewContent } from './webview';
 
 export namespace Comander {
 
@@ -62,10 +63,6 @@ export namespace Comander {
     }
 
     export function getCallLineComand() {
-        processCallStack();
-    }
-
-    export function setCallInfoCommand() {
-
+        setCallInfoCommand();
     }
 }

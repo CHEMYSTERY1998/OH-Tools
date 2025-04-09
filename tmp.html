@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Callstack 转换工具</title>
+    <style>
+        /* 此处样式同之前 */
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="form-group">
+            <label for="addr2line">addr2line路径</label>
+            <input type="text" id="addr2line" name="addr2line">
+        </div>
+        <div class="form-group">
+            <label for="outpath">编译产物out路径</label>
+            <input type="text" id="outpath" name="outpath">
+        </div>
+        <div class="form-group" style="flex-direction: column; align-items: flex-start;">
+            <label for="callstack" style="text-align: left; margin-bottom: 5px;">CallStack信息</label>
+            <textarea id="callstack" name="callstack"></textarea>
+        </div>
+        <div class="submit-button">
+            <button onclick="handleSubmit()">解析调用栈信息</button>
+        </div>
+    </div>
+    <script>
+        (function () {
+            const vscode = acquireVsCodeApi();
+            // 恢复扩展端传递的初始状态
+            const initialState = `${initData}`;
+            if (initialState) {
+                document.getElementById('addr2line').value = initialState.addr2line || '';
+                document.getElementById('outpath').value = initialState.outpath || '';
+                document.getElementById('callstack').value = initialState.callstack || '';
+            }
+
+            function saveState() {
+                const state = {
+                    addr2line: document.getElementById('addr2line').value,
+                    outpath: document.getElementById('outpath').value,
+                    callstack: document.getElementById('callstack').value
+                };
+                vscode.postMessage({
+                    type: 'stateUpdate',
+                    ...state
+                });
+            }
+
+            document.getElementById('addr2line').addEventListener('input', saveState);
+            document.getElementById('outpath').addEventListener('input', saveState);
+            document.getElementById('callstack').addEventListener('input', saveState);
+
+            window.handleSubmit = function () {
+                const addr2line = document.getElementById('addr2line').value;
+                const outpath = document.getElementById('outpath').value;
+                const callstack = document.getElementById('callstack').value;
+                vscode.postMessage({
+                    type: 'submit',
+                    addr2line,
+                    outpath,
+                    callstack
+                });
+            };
+        }());
+    </script>
+</body>
+
+</html>

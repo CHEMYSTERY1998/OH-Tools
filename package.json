@@ -51,6 +51,10 @@
       ],
       "OhToolMenu": [
         {
+          "command": "oh-tools.getCallLine",
+          "group": "group0"
+        },
+        {
           "command": "oh-tools.getSingleTest",
           "group": "group1"
         },

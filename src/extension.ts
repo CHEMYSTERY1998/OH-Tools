@@ -2,7 +2,10 @@ import * as vscode from 'vscode';
 
 import { Comander } from './comand';
 
+export let extensionContext: vscode.ExtensionContext;
+
 export function activate(context: vscode.ExtensionContext) {
+    extensionContext = context; // 现在可以重新赋值了
     console.log('Congratulations, your extension "oh-tools" is now active!');
     // 获取GTest单个用例命令
     const getSingleTest = vscode.commands.registerCommand('oh-tools.getSingleTest', Comander.getSingleTestCommand);
@@ -16,8 +19,7 @@ export function activate(context: vscode.ExtensionContext) {
     const sortZtoA = vscode.commands.registerCommand('oh-tools.sortZtoA', Comander.sortZtoACommand);
     // getCallLine
     const getCallLine = vscode.commands.registerCommand('oh-tools.getCallLine', Comander.getCallLineComand);
-    // setCallInfo
-    const setCallInfo = vscode.commands.registerCommand('oh-tools.setCallInfo', Comander.setCallInfoCommand);
+
     // 注册命令
     context.subscriptions.push(getSingleTest, sortAtoZ, sortZtoA, getLineNum, getPathLineNum, getCallLine);
 }

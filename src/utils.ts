@@ -1,11 +1,12 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-
 import { platform } from "os";
 import { exec } from 'child_process';
 
-const DEFAULT_BIN_PATH = "gn";
+import { getWebviewContent } from './webview';
+import { processCallStack } from './callstack';
+import { extensionContext } from './extension'; // 引入扩展上下文
 
 /**
  * 获取当前活动编辑器中光标所在行的文本内容
@@ -98,3 +99,87 @@ async function setPathToConfig(configPath: string, defalutPath: string, fileType
     return binPath;
 }
 
+function parseCallStack(addr2linePath: string, outPath: string, callstackInfo: string) {
+    if (addr2linePath === undefined || outPath === undefined || callstackInfo === undefined) {
+        vscode.window.showErrorMessage("请输入完整的路径和调用栈信息！");
+        return;
+    }
+    if (validatePath(addr2linePath).type !== 'file') {
+        vscode.window.showErrorMessage("addr2line路径错误,请检查!");
+        return;
+    }
+    if (validatePath(outPath).type !== 'directory') {
+        vscode.window.showErrorMessage("out路径需要包含generic_generic_arm_64only/general_all_phone_standard");
+        return;
+    }
+    if (callstackInfo.trim() === '') {
+        vscode.window.showErrorMessage("调用栈信息不能为空！");
+        return;
+    }
+    console.log('开始解析调用栈信息...');
+    processCallStack();
+}
+
+function handleMessage(message: any) {
+    if (message.type === 'submit') {
+        // 处理提交
+        console.log('addr2line:', message.addr2line);
+        console.log('outpath:', message.outpath);
+        console.log('callstack:', message.callstack);
+        extensionContext.workspaceState.update('webviewState', {
+            addr2line: message.addr2line,
+            outpath: message.outpath,
+            callstack: message.callstack
+        });
+        // 解析调用栈信息
+        parseCallStack(message.addr2line, message.outpath, message.callstack);
+    } else if (message.type === 'stateUpdate') {
+        // 接收到 Webview 状态更新
+        extensionContext.workspaceState.update('webviewState', {
+            addr2line: message.addr2line,
+            outpath: message.outpath,
+            callstack: message.callstack
+        });
+    }
+}
+
+// 创建和显示 WebviewPanel
+let panel: vscode.WebviewPanel | undefined = undefined; // 单例模式
+export function setCallInfoCommand() {
+    // 如果已有面板，则显示
+    if (panel) {
+        console.log('页面再次打开...');
+        panel.reveal(vscode.ViewColumn.One);
+        return;
+    }
+
+    panel = vscode.window.createWebviewPanel(
+        'exampleWebview',
+        'My Webview',
+        vscode.ViewColumn.One,
+        {
+            enableScripts: true
+        }
+    );
+
+    // 从全局状态中读取之前保存的数据
+    const savedState = extensionContext.workspaceState.get('webviewState');
+    panel.webview.html = getWebviewContent(savedState);
+
+    panel.webview.onDidReceiveMessage(handleMessage);
+
+
+    // 监听 Webview 面板的状态变化事件
+    panel.onDidChangeViewState(() => {
+        if (panel && panel.visible) {
+            console.log('页面切换到可见状态，刷新页面...');
+            const newState = extensionContext.workspaceState.get('webviewState');
+            panel.webview.html = getWebviewContent(newState); // 重新加载 HTML 内容
+        }
+    });
+
+    panel.onDidDispose(() => {
+        panel = undefined;
+        console.log('页面关闭...');
+    });
+}

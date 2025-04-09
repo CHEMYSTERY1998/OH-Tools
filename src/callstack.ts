@@ -4,26 +4,7 @@ import * as path from 'path';
 import { exec } from 'child_process';
 
 import { OHLOG } from './logger';
-
-const CODE_BASE_PATH = '/srv/workspace/dev_0324_cc471034f/code';
-const ADDR2LINE_TOOL_PATH = path.join(CODE_BASE_PATH, 'prebuilts/clang/ohos/linux-x86_64/llvm/bin/llvm-addr2line');
-const ABI_TYPE = 'generic_generic_arm_64only';
-const DEVICE_TYPE = 'general_all_phone_standard';
-const CALLSTACK_INFO = `
-#00 pc 00000000001c04fc /system/lib/ld-musl-aarch64.so.1(__timedwait_cp+192)(b1d75fe0aeacc10814a52e8e7263a527)
-#01 pc 00000000001c2650 /system/lib/ld-musl-aarch64.so.1(pthread_cond_timedwait+188)(b1d75fe0aeacc10814a52e8e7263a527)
-#02 pc 00000000000c11f8 /system/lib64/libc++.so(std::__h::condition_variable::__do_timed_wait(std::__h::unique_lock<std::__h::mutex>&, std::__h::chrono::time_point<std::__h::chrono::system_clock, std::__h::chrono::duration<long long, std::__h::ratio<1l, 1000000000l>>>)+108)(636474219bd868a0ae4d237e71f55db2c72e3149)
-#03 pc 00000000001c055c /data/test/HmlV1ProcessorTest(27f1829a3a1274c60db6e270dd305886)
-#04 pc 00000000001bfd60 /data/test/HmlV1ProcessorTest(OHOS::SoftBus::WifiDirectContext::CheckResult(int, OHOS::SoftBus::WifiDirectContext::ResultType)+464)(27f1829a3a1274c60db6e270dd305886)
-#05 pc 00000000001db234 /data/test/HmlV1ProcessorTest(OHOS::SoftBus::HmlV1ProcessorTest_ProcessConnectCommandForCreate01_Test::TestBody()+432)(27f1829a3a1274c60db6e270dd305886)
-#06 pc 000000000020fccc /data/test/HmlV1ProcessorTest(testing::Test::Run()+212)(27f1829a3a1274c60db6e270dd305886)
-#07 pc 0000000000210924 /data/test/HmlV1ProcessorTest(testing::TestInfo::Run()+568)(27f1829a3a1274c60db6e270dd305886)
-#08 pc 000000000021137c /data/test/HmlV1ProcessorTest(testing::TestSuite::Run()+476)(27f1829a3a1274c60db6e270dd305886)
-#09 pc 000000000021e718 /data/test/HmlV1ProcessorTest(testing::internal::UnitTestImpl::RunAllTests()+1224)(27f1829a3a1274c60db6e270dd305886)
-#10 pc 000000000021e0ac /data/test/HmlV1ProcessorTest(testing::UnitTest::Run()+120)(27f1829a3a1274c60db6e270dd305886)
-#11 pc 000000000022e904 /data/test/HmlV1ProcessorTest(main+96)(27f1829a3a1274c60db6e270dd305886)
-#12 pc 00000000000a159c /system/lib/ld-musl-aarch64.so.1(libc_start_main_stage2+80)(b1d75fe0aeacc10814a52e8e7263a527)
-`;
+import { extensionContext } from './extension';
 
 function collectZippedSharedLibraries(directory: string): Record<string, string> {
     const zippedLibraries: Record<string, string> = {};
@@ -101,7 +82,7 @@ function getCallStackMap(callStackInfo: string): Record<string, [string, string]
     return callStackMap;
 }
 
-async function parseCallStack(libraryPaths: Record<string, string>, callStackMap: Record<string, [string, string]>):
+async function parseCallStack(addr2linePath: string, libraryPaths: Record<string, string>, callStackMap: Record<string, [string, string]>):
     Promise<void> {
     let formattedCallStack = '';
     for (const address of Object.keys(callStackMap)) {
@@ -116,7 +97,7 @@ async function parseCallStack(libraryPaths: Record<string, string>, callStackMap
             //         formattedCallStack += `\x1b[31m${callStackMap[address][0]}\x1b[32m ${stdout}\x1b[0m`
             //     }
             // });
-            OHLOG.instance.log(`${ADDR2LINE_TOOL_PATH} -Cfpie ${libraryPath} ${address}`);
+            OHLOG.instance.log(`${addr2linePath} -Cfpie ${libraryPath} ${address}`);
         } catch (error) {
             console.error(`Error processing address ${address}:`, error);
         }
@@ -127,10 +108,20 @@ async function parseCallStack(libraryPaths: Record<string, string>, callStackMap
 }
 
 export async function processCallStack() {
-    const sharedLibraryPath = path.join(CODE_BASE_PATH, 'out', ABI_TYPE, DEVICE_TYPE, 'lib.unstripped');
-    const executablePath = path.join(CODE_BASE_PATH, 'out', ABI_TYPE, DEVICE_TYPE, 'exe.unstripped');
+    // 从config中获取信息
+    const webviewState = extensionContext.workspaceState.get<{ addr2line: string; outpath: string; callstack: string }>('webviewState');
+    if (!webviewState) {
+        console.log('webviewState does not exist or is undefined');
+        return;
+    }
+    const addr2linePath = webviewState.addr2line;
+    const outPath = webviewState.outpath;
+    const callStackInfo = webviewState.callstack;
+
+    const sharedLibraryPath = path.join(outPath, 'lib.unstripped');
+    const executablePath = path.join(outPath, 'exe.unstripped');
     const libraryPaths = { ...collectZippedSharedLibraries(sharedLibraryPath), ...collectExecutableFiles(executablePath) };
-    const callStackMap = getCallStackMap(CALLSTACK_INFO);
-    parseCallStack(libraryPaths, callStackMap);
+    const callStackMap = getCallStackMap(callStackInfo);
+    parseCallStack(addr2linePath, libraryPaths, callStackMap);
 }
 
