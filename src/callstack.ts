@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { exec } from 'child_process';
+import * as child_process from 'child_process';
 
 import { OHLOG } from './logger';
 import { extensionContext } from './extension';
@@ -82,9 +82,10 @@ function getCallStackMap(callStackInfo: string): Record<string, [string, string]
     return callStackMap;
 }
 
+let terminal = vscode.window.createTerminal('OH-Tools');
 async function parseCallStack(addr2linePath: string, libraryPaths: Record<string, string>, callStackMap: Record<string, [string, string]>):
     Promise<void> {
-    let formattedCallStack = '';
+    let formattedCallStack = 'stack info:\n';
     for (const address of Object.keys(callStackMap)) {
         const libraryName = callStackMap[address][1];
         const libraryPath = libraryPaths[libraryName];
@@ -92,19 +93,27 @@ async function parseCallStack(addr2linePath: string, libraryPaths: Record<string
             continue;
         }
         try {
-            // exec(`${ADDR2LINE_TOOL_PATH} -Cfpie ${libraryPath} ${address}`, (error, stdout, stderr) => {
-            //     if (stdout) {
-            //         formattedCallStack += `\x1b[31m${callStackMap[address][0]}\x1b[32m ${stdout}\x1b[0m`
-            //     }
-            // });
-            OHLOG.instance.log(`${addr2linePath} -Cfpie ${libraryPath} ${address}`);
+            // 使用 execSync 执行命令并捕获输出
+            const stdout = child_process.execSync(`${addr2linePath} -Cfpie ${libraryPath} ${address}`).toString();
+            if (stdout) {
+                formattedCallStack += `\x1b[31m${callStackMap[address][0]}\x1b[32m ${stdout}\x1b[0m`;
+            }
         } catch (error) {
             console.error(`Error processing address ${address}:`, error);
         }
     }
 
-    // OHLOG.logger.log(formattedCallStack);
-    OHLOG.instance.show();
+    const filePath = `${addr2linePath}_parse.txt`;
+    // 使用 fs 写入文件
+    fs.writeFile(filePath, formattedCallStack, (err) => {
+        if (!err) {
+            if (!terminal || terminal.exitStatus) { // 检查终端是否已经关闭
+                terminal = vscode.window.createTerminal('OH-Tools');
+            }
+            terminal.sendText(`cat ${filePath}`);
+            terminal.show();
+        }
+    });
 }
 
 export async function processCallStack() {
