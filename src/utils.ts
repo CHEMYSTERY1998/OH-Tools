@@ -4,7 +4,6 @@ import * as path from 'path';
 import { platform } from "os";
 import { exec } from 'child_process';
 
-import { getWebviewContent } from './webview';
 import { processCallStack } from './callstack';
 import { extensionContext } from './extension'; // 引入扩展上下文
 
@@ -141,6 +140,21 @@ function handleMessage(message: any) {
             callstack: message.callstack
         });
     }
+}
+
+function getWebviewContent(initialState: any): string {
+    const initState = JSON.stringify(initialState || {});
+    const filePath = path.join(extensionContext.extensionPath, 'media', 'webview.html');
+    try {
+        let html = fs.readFileSync(filePath, 'utf8');
+        html = html.replace(/\/\/\[strip\]/g, "")  // 删除修剪注释行
+            .replace(/{{initState}}/g, initState); // 替换变量
+        return html;
+    } catch (err) {
+        console.error('Failed to load webview HTML', err);
+        return `<html><body><h1>Error loading HTML</h1></body></html>`;
+    }
+
 }
 
 // 创建和显示 WebviewPanel
