@@ -104,12 +104,22 @@
         (function () {
             const vscode = acquireVsCodeApi();
             // 恢复扩展端传递的初始状态
-            //[strip]const initialState = {{initState}};
-            if (initialState) {
-                document.getElementById('addr2line').value = initialState.addr2line || '';
-                document.getElementById('outpath').value = initialState.outpath || '';
-                document.getElementById('callstack').value = initialState.callstack || '';
-            }
+            //[_strip_]const initialState = {{initState}};
+            vscode.postMessage({ type: 'getState' });
+            // 接收返回的数据
+            window.addEventListener('message', event => {
+                const message = event.data;
+                if (message.command === 'returnState') {
+                    const initialState = message.value;
+                    console.log('收到来自扩展的数据:', initialState);
+                    if (initialState) {
+                        console.log('收到来自扩展的数据2:', initialState);
+                        document.getElementById('addr2line').value = initialState.addr2line || '';
+                        document.getElementById('outpath').value = initialState.outpath || '';
+                        document.getElementById('callstack').value = initialState.callstack || '';
+                    }
+                }
+            });
 
             function saveState() {
                 const state = {

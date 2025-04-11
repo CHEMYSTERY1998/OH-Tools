@@ -139,22 +139,33 @@ function handleMessage(message: any) {
             outpath: message.outpath,
             callstack: message.callstack
         });
+    } else if (message.type === 'getState') {
+        const newState = extensionContext.workspaceState.get('webviewState');
+        if (panel) {
+            panel.webview.postMessage({
+                command: 'returnState',
+                value: newState
+            });
+        }
     }
 }
 
+let cachedHtml: string | undefined;
 function getWebviewContent(initialState: any): string {
+    if (cachedHtml) {
+        return cachedHtml;
+    }
     const initState = JSON.stringify(initialState || {});
     const filePath = path.join(extensionContext.extensionPath, 'media', 'webview.html');
     try {
         let html = fs.readFileSync(filePath, 'utf8');
-        html = html.replace(/\/\/\[strip\]/g, "")  // 删除修剪注释行
+        cachedHtml = html.replace(/\/\/\[strip\]/g, "")  // 删除修剪注释行
             .replace(/{{initState}}/g, initState); // 替换变量
-        return html;
+        return cachedHtml;
     } catch (err) {
         console.error('Failed to load webview HTML', err);
         return `<html><body><h1>Error loading HTML</h1></body></html>`;
     }
-
 }
 
 // 创建和显示 WebviewPanel
@@ -180,8 +191,8 @@ export function setCallInfoCommand() {
     const savedState = extensionContext.workspaceState.get('webviewState');
     panel.webview.html = getWebviewContent(savedState);
 
+    // 监听消息事件
     panel.webview.onDidReceiveMessage(handleMessage);
-
 
     // 监听 Webview 面板的状态变化事件
     panel.onDidChangeViewState(() => {
