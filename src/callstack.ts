@@ -129,7 +129,15 @@ export async function processCallStack() {
 
     const sharedLibraryPath = path.join(outPath, 'lib.unstripped');
     const executablePath = path.join(outPath, 'exe.unstripped');
-    const libraryPaths = { ...collectZippedSharedLibraries(sharedLibraryPath), ...collectExecutableFiles(executablePath) };
+    const sharedLibraries = fs.existsSync(sharedLibraryPath)
+        ? collectZippedSharedLibraries(sharedLibraryPath)
+        : {};
+
+    const executables = fs.existsSync(executablePath)
+        ? collectExecutableFiles(executablePath)
+        : {};
+
+    const libraryPaths = { ...sharedLibraries, ...executables };
     const callStackMap = getCallStackMap(callStackInfo);
     parseCallStack(addr2linePath, libraryPaths, callStackMap);
 }
