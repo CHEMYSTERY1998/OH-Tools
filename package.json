@@ -2,7 +2,9 @@
   "name": "oh-tools",
   "displayName": "OH-Tools",
   "description": "",
+  "author": "chemystery",
   "version": "0.0.2",
+  "icon": "media/icon.png",
   "engines": {
     "vscode": "^1.98.0"
   },
@@ -15,14 +17,14 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "mySidebar",
-          "title": "My Sidebar",
+          "id": "oh-tools-sidebar",
+          "title": "oh-tools",
           "icon": "media/icon.svg"
         }
       ]
     },
     "views": {
-      "mySidebar": [
+      "oh-tools-sidebar": [
         {
           "icon": "media/icon.svg",
           "type": "webview",

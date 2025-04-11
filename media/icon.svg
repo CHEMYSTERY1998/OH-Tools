@@ -1,0 +1,19 @@
+<svg width="640" height="480" xmlns="http://www.w3.org/2000/svg">
+ <!-- Created with SVG-edit - https://github.com/SVG-Edit/svgedit-->
+
+ <g>
+  <title>background</title>
+  <rect fill="none" id="canvas_background" height="1169" width="2302" y="-1" x="-1"/>
+ </g>
+ <g class="layer">
+  <title>Layer 1</title>
+  <g id="svg_1">
+   <ellipse stroke-width="5" stroke="#000000" ry="232.042514" rx="303.999996" id="svg_5" fill="#7f0000" cy="238.891109" cx="320.165493"/>
+   <text y="206.883516" xml:space="preserve" x="272.124675" transform="matrix(12.9939, 0, 0, 23.0903, -3285.33, -4340.01)" text-anchor="middle" stroke-width="0" stroke-linejoin="null" stroke-linecap="null" stroke-dasharray="null" stroke="#7f00ff" id="svg_7" font-size="24" font-family="serif" fill="#ffffff">OH</text>
+   <text y="193.826186" xml:space="preserve" x="168.677811" transform="matrix(14.818, 0, 0, 22.5794, -2011.94, -4023.75)" text-anchor="middle" stroke-width="0" stroke-linejoin="null" stroke-linecap="null" stroke-dasharray="null" stroke="#7f00ff" id="svg_8" font-size="24" font-family="serif" fill="#ffffff">‌¡</text>
+   <ellipse stroke-width="5" stroke="#000000" ry="232.042514" rx="303.999996" id="svg_9" fill="#7f0000" cy="238.891109" cx="320.165493"/>
+   <text y="206.883516" xml:space="preserve" x="272.124675" transform="matrix(12.9939, 0, 0, 23.0903, -3285.33, -4340.01)" text-anchor="middle" stroke-width="0" stroke-linejoin="null" stroke-linecap="null" stroke="#7f00ff" id="svg_10" font-size="24" font-family="serif" fill="#ffffff">OH</text>
+   <text y="193.907822" xml:space="preserve" x="170.444142" transform="matrix(14.4346, 0, 0, 22.1165, -1946.09, -3940.62)" text-anchor="middle" stroke-width="0" stroke-linejoin="null" stroke-linecap="null" stroke-dasharray="null" stroke="#7f00ff" id="svg_11" font-size="24" font-family="serif" fill="#ffffff">‌¡</text>
+  </g>
+ </g>
+</svg>
