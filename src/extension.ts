@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 
 import { Comander } from './comand';
+import {webView} from './webProvider';
 
 export let extensionContext: vscode.ExtensionContext;
 
@@ -20,8 +21,14 @@ export function activate(context: vscode.ExtensionContext) {
     // getCallLine
     const getCallLine = vscode.commands.registerCommand('oh-tools.getCallLine', Comander.getCallLineComand);
 
+    //
+    const webview = vscode.window.registerWebviewViewProvider(
+        'myWebView',
+        new webView(context)
+    );
+
     // 注册命令
-    context.subscriptions.push(getSingleTest, sortAtoZ, sortZtoA, getLineNum, getPathLineNum, getCallLine);
+    context.subscriptions.push(getSingleTest, sortAtoZ, sortZtoA, getLineNum, getPathLineNum, getCallLine, webview);
 }
 
 export function deactivate() { }

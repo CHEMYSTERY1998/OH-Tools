@@ -12,6 +12,25 @@
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "mySidebar",
+          "title": "My Sidebar",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "mySidebar": [
+        {
+          "icon": "media/icon.svg",
+          "type": "webview",
+          "id": "myWebView",
+          "name": "My Web Page"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "oh-tools.getSingleTest",

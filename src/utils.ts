@@ -151,7 +151,7 @@ function handleMessage(message: any) {
 }
 
 let cachedHtml: string | undefined;
-function getWebviewContent(initialState: any): string {
+export function getWebviewContent(initialState: any): string {
     if (cachedHtml) {
         return cachedHtml;
     }
