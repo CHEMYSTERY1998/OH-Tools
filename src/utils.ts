@@ -119,7 +119,7 @@ function parseCallStack(addr2linePath: string, outPath: string, callstackInfo: s
     processCallStack();
 }
 
-function handleMessage(message: any) {
+export function handleMessage(message: any) {
     if (message.type === 'submit') {
         // 处理提交
         console.log('addr2line:', message.addr2line);
@@ -189,7 +189,7 @@ export function setCallInfoCommand() {
 
     // 从全局状态中读取之前保存的数据
     const savedState = extensionContext.workspaceState.get('webviewState');
-    panel.webview.html = getWebviewContent(savedState);
+    panel.webview.html = getWebviewContent(savedState).replace('600px', '300px'); // 设置 HTML 内容
 
     // 监听消息事件
     panel.webview.onDidReceiveMessage(handleMessage);
@@ -199,7 +199,7 @@ export function setCallInfoCommand() {
         if (panel && panel.visible) {
             console.log('页面切换到可见状态，刷新页面...');
             const newState = extensionContext.workspaceState.get('webviewState');
-            panel.webview.html = getWebviewContent(newState); // 重新加载 HTML 内容
+            panel.webview.html = getWebviewContent(newState).replace('600px', '300px'); // 设置 HTML 内容
         }
     });
 

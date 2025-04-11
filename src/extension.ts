@@ -21,11 +21,13 @@ export function activate(context: vscode.ExtensionContext) {
     // getCallLine
     const getCallLine = vscode.commands.registerCommand('oh-tools.getCallLine', Comander.getCallLineComand);
 
-    //
-    const webview = vscode.window.registerWebviewViewProvider(
-        'myWebView',
-        new webView(context)
-    );
+    // 注册主侧栏面板
+    const webview = vscode.window.registerWebviewViewProvider('myWebView', webView.getInstance(context),
+        {
+            webviewOptions: {
+                retainContextWhenHidden: true // 保留上下文
+            }
+        });
 
     // 注册命令
     context.subscriptions.push(getSingleTest, sortAtoZ, sortZtoA, getLineNum, getPathLineNum, getCallLine, webview);

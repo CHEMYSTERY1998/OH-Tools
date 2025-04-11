@@ -1,13 +1,22 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { getWebviewContent } from './utils';
+import { getWebviewContent, handleMessage } from './utils';
 
 /*
   用于创建主测栏的webview
 */
 export class webView implements vscode.WebviewViewProvider {
-    constructor(private context: vscode.ExtensionContext) { }
+    private static instance: webView;
+
+    private constructor(private context: vscode.ExtensionContext) { }
+
+    public static getInstance(context: vscode.ExtensionContext): webView {
+        if (!webView.instance) {
+            webView.instance = new webView(context);
+        }
+        return webView.instance;
+    }
 
     resolveWebviewView(
         webviewView: vscode.WebviewView,
@@ -19,5 +28,6 @@ export class webView implements vscode.WebviewViewProvider {
             enableScripts: true,
         };
         webview.html = getWebviewContent(this.context.workspaceState.get('webviewState'));
+        webview.onDidReceiveMessage(handleMessage);
     }
 }
