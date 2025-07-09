@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-import { Comander } from './comand';
+import { Commander } from './command';
 import {webView} from './webProvider';
 
 export let extensionContext: vscode.ExtensionContext;
@@ -9,17 +9,17 @@ export function activate(context: vscode.ExtensionContext) {
     extensionContext = context; // 现在可以重新赋值了
     console.log('Congratulations, your extension "oh-tools" is now active!');
     // 获取GTest单个用例命令
-    const getSingleTest = vscode.commands.registerCommand('oh-tools.getSingleTest', Comander.getSingleTestCommand);
+    const getSingleTest = vscode.commands.registerCommand('oh-tools.getSingleTest', Commander.getSingleTestCommand);
     // 获取当前活动行号
-    const getLineNum = vscode.commands.registerCommand('oh-tools.getLineNum', Comander.getLineNumCommand);
+    const getLineNum = vscode.commands.registerCommand('oh-tools.getLineNum', Commander.getLineNumCommand);
     // 获取当前活动行号(带路径)
-    const getPathLineNum = vscode.commands.registerCommand('oh-tools.getPathLineNum', Comander.getPathLineNumCommand);
+    const getPathLineNum = vscode.commands.registerCommand('oh-tools.getPathLineNum', Commander.getPathLineNumCommand);
     // @command:editor.action.sortLinesAscending
-    const sortAtoZ = vscode.commands.registerCommand('oh-tools.sortAtoZ', Comander.sortAtoZCommand);
+    const sortAtoZ = vscode.commands.registerCommand('oh-tools.sortAtoZ', Commander.sortAtoZCommand);
     // @command:editor.action.sortLinesDescending
-    const sortZtoA = vscode.commands.registerCommand('oh-tools.sortZtoA', Comander.sortZtoACommand);
+    const sortZtoA = vscode.commands.registerCommand('oh-tools.sortZtoA', Commander.sortZtoACommand);
     // getCallLine
-    const getCallLine = vscode.commands.registerCommand('oh-tools.getCallLine', Comander.getCallLineComand);
+    const getCallLine = vscode.commands.registerCommand('oh-tools.getCallLine', Commander.getCallLineCommand);
 
     // 注册主侧栏面板
     const webview = vscode.window.registerWebviewViewProvider('myWebView', webView.getInstance(context),
