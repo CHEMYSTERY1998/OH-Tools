@@ -1,7 +1,8 @@
 import * as vscode from 'vscode';
 
-import { getCurrentLineNum, getCurrentLineText, setCallInfoCommand } from './utils';
-import { processCallStack } from './callstack';
+import { getCurrentLineNum, getCurrentLineText } from './utils';
+import { setCallInfoCommand } from './webProvider';
+
 
 export namespace Commander {
 

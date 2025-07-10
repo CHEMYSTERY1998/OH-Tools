@@ -5,6 +5,7 @@ import * as child_process from 'child_process';
 
 import { OHLOG } from './logger';
 import { getContext } from './context';
+import { validatePath } from './utils';
 
 function collectZippedSharedLibraries(directory: string): Record<string, string> {
     const zippedLibraries: Record<string, string> = {};
@@ -83,7 +84,7 @@ function getCallStackMap(callStackInfo: string): Record<string, [string, string]
 }
 
 let terminal = vscode.window.createTerminal('OH-Tools');
-async function parseCallStack(addr2linePath: string, libraryPaths: Record<string, string>, callStackMap: Record<string, [string, string]>):
+async function parseCallStackInner(addr2linePath: string, libraryPaths: Record<string, string>, callStackMap: Record<string, [string, string]>):
     Promise<void> {
     let formattedCallStack = 'stack info:\n';
     for (const address of Object.keys(callStackMap)) {
@@ -139,6 +140,26 @@ export async function processCallStack() {
 
     const libraryPaths = { ...sharedLibraries, ...executables };
     const callStackMap = getCallStackMap(callStackInfo);
-    parseCallStack(addr2linePath, libraryPaths, callStackMap);
+    parseCallStackInner(addr2linePath, libraryPaths, callStackMap);
 }
 
+export function parseCallStack(addr2linePath: string, outPath: string, callstackInfo: string) {
+    if (addr2linePath === undefined || outPath === undefined || callstackInfo === undefined) {
+        vscode.window.showErrorMessage("请输入完整的路径和调用栈信息！");
+        return;
+    }
+    if (validatePath(addr2linePath).type !== 'file') {
+        vscode.window.showErrorMessage("addr2line路径错误,请检查!");
+        return;
+    }
+    if (validatePath(outPath).type !== 'directory') {
+        vscode.window.showErrorMessage("out路径需要包含generic_generic_arm_64only/general_all_phone_standard");
+        return;
+    }
+    if (callstackInfo.trim() === '') {
+        vscode.window.showErrorMessage("调用栈信息不能为空！");
+        return;
+    }
+    console.log('开始解析调用栈信息...');
+    processCallStack();
+}
