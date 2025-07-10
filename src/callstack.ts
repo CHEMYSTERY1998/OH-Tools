@@ -78,6 +78,7 @@ function getCallStackMap(callStackInfo: string): Record<string, [string, string]
                 const address = match[2];
                 const libraryName = match[3];
                 callStackMap[address] = [frameNumber, libraryName];
+                console.log(`Parsed call stack: ${frameNumber} ${address} ${libraryName}`);
             }
         }
     }
@@ -144,11 +145,11 @@ export async function processCallStack() {
     const executablePath = path.join(outPath, 'exe.unstripped');
     const sharedLibraries = fs.existsSync(sharedLibraryPath)
         ? collectZippedSharedLibraries(sharedLibraryPath)
-        : {};
+        : collectExecutableFiles(outPath);
 
     const executables = fs.existsSync(executablePath)
         ? collectExecutableFiles(executablePath)
-        : {};
+        : collectExecutableFiles(outPath);
 
     const libraryPaths = { ...sharedLibraries, ...executables };
     const callStackMap = getCallStackMap(callStackInfo);
@@ -213,4 +214,16 @@ export function getExecutablePath() {
         return path.join(resourcePath, 'llvm-addr2line'); // macOS 和 Linux 使用相同的文件
     }
     throw new Error(`Unsupported platform: ${curPlatform}`);
+}
+
+// 给插件的 addr2line 设置可执行权限（Linux 和 macOS）
+export function setExecutablePermission() {
+    const executablePath = getExecutablePath();
+    fs.chmod(executablePath, '755', (err) => {
+        if (err) {
+            console.error(`Failed to set executable permission for ${executablePath}:`, err);
+        } else {
+            console.log(`Set executable permission for ${executablePath}`);
+        }
+    });
 }
