@@ -6,7 +6,7 @@ import * as child_process from 'child_process';
 import { platform } from 'os';
 
 import { getContext } from './context';
-import { validatePath } from './utils';
+import { getTerminalType, validatePath, winPathToGitBashPath } from './utils';
 
 function collectZippedSharedLibraries(directory: string): Record<string, string> {
     const zippedLibraries: Record<string, string> = {};
@@ -89,6 +89,7 @@ async function parseCallStackInner(addr2linePath: string, libraryPaths: Record<s
     Promise<void> {
     if (Object.keys(callStackMap).length === 0) {
         vscode.window.showErrorMessage("调用栈信息格式不正确，请检查输入！");
+        return;
     }
 
     let formattedCallStack = 'stack info:\n';
@@ -117,7 +118,12 @@ async function parseCallStackInner(addr2linePath: string, libraryPaths: Record<s
             if (!terminal || terminal.exitStatus) { // 检查终端是否已经关闭
                 terminal = vscode.window.createTerminal('OH-Tools');
             }
-            terminal.sendText(`cat ${filePath}`);
+            // 如果是cmd，需将 Windows 路径转换为 Git Bash 路径再输出
+            if (getTerminalType() === 'cmd') {
+                terminal.sendText(`type ${filePath}`); // Windows 使用 type
+            } else {
+                terminal.sendText(`cat ${winPathToGitBashPath(filePath)}`); // Linux 和 macOS 使用 cat
+            }
             terminal.show();
         }
     });
@@ -130,7 +136,7 @@ export async function processCallStack() {
         console.log('webviewState does not exist or is undefined');
         return;
     }
-    const addr2linePath = webviewState.addr2line;
+    const addr2linePath = isPluginAddr2lineAvailable ? getExecutablePath() : webviewState.addr2line;
     const outPath = webviewState.outpath;
     const callStackInfo = webviewState.callstack;
 
@@ -181,7 +187,7 @@ export function parseCallStack(addr2linePath: string, outPath: string, callstack
         return;
     }
     if (validatePath(outPath).type !== 'directory') {
-        vscode.window.showErrorMessage("out路径需要包含generic_generic_arm_64only/general_all_phone_standard");
+        vscode.window.showErrorMessage("out路径需要包含形如generic_generic_arm_64only/general_all_phone_standard");
         console.error(`out路径错误: ${outPath}`);
         return;
     }

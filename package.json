@@ -39,7 +39,7 @@
     "commands": [
       {
         "command": "oh-tools.getSingleTest",
-        "title": "Get single Gtest"
+        "title": "获取GTest单个用例执行命令"
       },
       {
         "command": "oh-tools.sortAtoZ",
@@ -61,7 +61,7 @@
       },
       {
         "command": "oh-tools.getCallLine",
-        "title": "getCallLine",
+        "title": "解析调用栈信息",
         "category": "getCallLine"
       }
     ],

@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import { platform } from "os";
+import * as os from 'os';
 import { exec } from 'child_process';
 
 import { getContext } from './context'; // 引入扩展上下文
@@ -34,7 +34,7 @@ export function getCurrentLineNum(useRelativePath: boolean = false): string | un
         return undefined;
     }
     let separator = "\\";
-    if (platform() !== "win32") {
+    if (os.platform() !== "win32") {
         separator = "/";
     }
     const document = editor.document; // 当前文档
@@ -112,4 +112,44 @@ async function setPathToConfig(configPath: string, defaultPath: string, fileType
     }
 
     return binPath;
+}
+
+/**
+ * 获取插件的终端类型
+ * @returns 返回终端的类型（如 "cmd", "bash" 等）
+ */
+export function getTerminalType(): string {
+    const platform = os.platform();  // 获取当前操作系统
+    const terminalShell = vscode.env.shell; // 获取当前终端的 shell 类型
+    console.log(`Current terminal shell: ${terminalShell}`);
+
+    if (platform === 'win32') {
+        // 如果是 Windows 系统
+        if (terminalShell?.includes('cmd') || terminalShell?.includes('powershell')) {
+            return "cmd";
+        } else if (terminalShell?.includes('bash')) {
+            return "bash";
+        } else {
+            return "cmd"; // 默认返回cmd
+        }
+    } else if (platform === 'linux' || platform === 'darwin') {
+        return "bash";
+    } else {
+        return "bash";
+    }
+}
+
+/**
+ * 将 Windows 路径转换为 Git Bash 格式的路径
+ * @param filePath Windows 路径
+ * @returns 转换后的 Git Bash 格式路径
+ */
+export function winPathToGitBashPath(filePath: string): string {
+    if (os.platform() === 'win32') {
+        // 获取驱动器字母并转换为小写
+        const driveLetter = filePath.charAt(0).toLowerCase();
+        // 替换驱动器字母为 Git Bash 格式
+        return filePath.replace(/^[a-zA-Z]:\\/, `/${driveLetter}/`).replace(/\\/g, '/');
+    }
+    return filePath;
 }
