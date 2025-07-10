@@ -1,10 +1,10 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+
 import { platform } from "os";
 import { exec } from 'child_process';
 
-import { processCallStack } from './callstack';
 import { getContext } from './context'; // 引入扩展上下文
 
 /**
@@ -87,16 +87,23 @@ export function validatePath(inputPath: string): { type: 'file' | 'directory' | 
 }
 
 
-// 弹出输入框让用户输入路径
-async function setPathToConfig(configPath: string, defalutPath: string, fileType: string, prompt: string): Promise<string> {
+/**
+ * 弹出输入框让用户输入路径，并验证路径是否合法
+ * @param configPath 配置项的路径
+ * @param defaultPath 默认路径
+ * @param fileType 文件类型（'file' 或 'directory'）
+ * @param prompt 输入框提示信息
+ * @returns 返回用户输入的合法路径或默认路径
+ */
+async function setPathToConfig(configPath: string, defaultPath: string, fileType: string, prompt: string): Promise<string> {
     const config = vscode.workspace.getConfiguration();
     let binPath = await vscode.window.showInputBox({
         placeHolder: prompt,
         prompt: prompt,
-        value: defalutPath,
+        value: defaultPath,
     });
     if (!binPath) {
-        return defalutPath;
+        return defaultPath;
     }
     const ret = validatePath(binPath);
     // 如果用户输入了合法路径，则保存到配置中

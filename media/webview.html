@@ -86,12 +86,12 @@
     <div class="container">
         <div class="form-group">
             <label for="addr2line" title="请输入 addr2line 的路径,ubuntu或者windows平台可以不用输入">addr2line路径</label>
-            <input type="text" id="addr2line" name="addr2line" title="请输入 addr2line 的路径,ubuntu或者windows平台可以不用输入">
+            <input type="text" id="addr2line" name="addr2line" value="可不填(若插件自带llvm-addr2line不可用,需要自己添加路径)">
         </div>
 
         <div class="form-group">
             <label for="outpath" title="请输入编译产物绝对路径,如/code/OpenHarmony/out/rk3568/">编译产物路径</label>
-            <input type="text" id="outpath" name="outpath" title="请输入编译产物绝对路径,如/code/OpenHarmony/out/rk3568/">
+            <input type="text" id="outpath" name="outpath" title="请输入编译产物绝对路径,如/code/out/rk3568/">
         </div>
 
         <div class="form-group" style="flex-direction: column; align-items: flex-start;">

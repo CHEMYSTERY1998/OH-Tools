@@ -3,7 +3,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as child_process from 'child_process';
 
-import { OHLOG } from './logger';
+import { platform } from 'os';
+
 import { getContext } from './context';
 import { validatePath } from './utils';
 
@@ -86,6 +87,10 @@ function getCallStackMap(callStackInfo: string): Record<string, [string, string]
 let terminal = vscode.window.createTerminal('OH-Tools');
 async function parseCallStackInner(addr2linePath: string, libraryPaths: Record<string, string>, callStackMap: Record<string, [string, string]>):
     Promise<void> {
+    if (Object.keys(callStackMap).length === 0) {
+        vscode.window.showErrorMessage("调用栈信息格式不正确，请检查输入！");
+    }
+
     let formattedCallStack = 'stack info:\n';
     for (const address of Object.keys(callStackMap)) {
         const libraryName = callStackMap[address][1];
@@ -95,6 +100,7 @@ async function parseCallStackInner(addr2linePath: string, libraryPaths: Record<s
         }
         try {
             // 使用 execSync 执行命令并捕获输出
+            console.log(`${addr2linePath} -Cfpie ${libraryPath} ${address}`);
             const stdout = child_process.execSync(`${addr2linePath} -Cfpie ${libraryPath} ${address}`).toString();
             if (stdout) {
                 formattedCallStack += `\x1b[31m${callStackMap[address][0]}\x1b[32m ${stdout}\x1b[0m`;
@@ -143,23 +149,62 @@ export async function processCallStack() {
     parseCallStackInner(addr2linePath, libraryPaths, callStackMap);
 }
 
+let isPluginAddr2lineAvailable: boolean | undefined = undefined;
 export function parseCallStack(addr2linePath: string, outPath: string, callstackInfo: string) {
+    if (isPluginAddr2lineAvailable === undefined) {
+        try {
+            let pluginBin = getExecutablePath(); 
+            // 使用 execSync 执行命令并捕获输出
+            console.log(`${pluginBin} --help`);
+            const stdout = child_process.execSync(`${pluginBin} --help`).toString();
+            if (stdout) {
+                console.log("插件自带的 addr2line 可用");
+                isPluginAddr2lineAvailable = true; // 如果命令执行成功，则认为插件自带的 addr2line 可用
+            }
+        } catch (error) {
+            isPluginAddr2lineAvailable = false;
+            console.error(`Error checking plugin addr2line availability:`, error);
+        }
+    }
+    if (isPluginAddr2lineAvailable) {
+        addr2linePath = getExecutablePath(); // 使用插件自带的 addr2line
+        console.log(`使用插件自带的 addr2line: ${addr2linePath}`);
+    }
+
     if (addr2linePath === undefined || outPath === undefined || callstackInfo === undefined) {
         vscode.window.showErrorMessage("请输入完整的路径和调用栈信息！");
         return;
     }
     if (validatePath(addr2linePath).type !== 'file') {
         vscode.window.showErrorMessage("addr2line路径错误,请检查!");
+        console.error(`addr2line路径错误: ${addr2linePath}`);
         return;
     }
     if (validatePath(outPath).type !== 'directory') {
         vscode.window.showErrorMessage("out路径需要包含generic_generic_arm_64only/general_all_phone_standard");
+        console.error(`out路径错误: ${outPath}`);
         return;
     }
     if (callstackInfo.trim() === '') {
         vscode.window.showErrorMessage("调用栈信息不能为空！");
+        console.error('调用栈信息不能为空');
         return;
     }
     console.log('开始解析调用栈信息...');
     processCallStack();
+}
+
+// 获取平台对应的二进制文件路径
+export function getExecutablePath() {
+    const curPlatform = platform();
+    const resourcePath = path.join(__dirname, '..', 'resources'); // 确保这个路径指向插件的 resources 目录
+
+    if (curPlatform === 'win32') {
+        return path.join(resourcePath, 'llvm-addr2line.exe');
+    } else if (curPlatform === 'linux') {
+        return path.join(resourcePath, 'llvm-addr2line');
+    } else if (curPlatform === 'darwin') {
+        return path.join(resourcePath, 'llvm-addr2line'); // macOS 和 Linux 使用相同的文件
+    }
+    throw new Error(`Unsupported platform: ${curPlatform}`);
 }

@@ -13,6 +13,9 @@
   ],
   "activationEvents": [],
   "main": "./out/extension.js",
+  "files": [
+    "resources"
+  ],
   "contributes": {
     "viewsContainers": {
       "activitybar": [

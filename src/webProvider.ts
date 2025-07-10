@@ -43,10 +43,7 @@ export function handleMessage(message: any) {
             addr2line: message.addr2line,
             outpath: message.outpath,
             callstack: message.callstack
-        });
-
-        //TODO: 这里可以添加对 addr2line 路径的验证.如果验证失败，使用插件自带工具，若自带工具不能使用，则提示输入路径
-
+        });        
         // 解析调用栈信息
         parseCallStack(message.addr2line, message.outpath, message.callstack);
     } else if (message.type === 'stateUpdate') {
@@ -87,7 +84,7 @@ export function getWebviewContent(initialState: any): string {
 
 // 创建和显示 WebviewPanel
 let panel: vscode.WebviewPanel | undefined = undefined; // 单例模式
-export function setCallInfoCommand() {
+export function createParseWebPanel() {
     // 如果已有面板，则显示
     if (panel) {
         console.log('页面再次打开...');

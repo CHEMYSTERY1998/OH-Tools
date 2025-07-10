@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 
 import { getCurrentLineNum, getCurrentLineText } from './utils';
-import { setCallInfoCommand } from './webProvider';
+import { createParseWebPanel } from './webProvider';
 
 
 export namespace Commander {
@@ -63,6 +63,6 @@ export namespace Commander {
     }
 
     export function getCallLineCommand() {
-        setCallInfoCommand();
+        createParseWebPanel();
     }
 }
