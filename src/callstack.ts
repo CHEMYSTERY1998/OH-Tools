@@ -218,6 +218,11 @@ export function getExecutablePath() {
 
 // 给插件的 addr2line 设置可执行权限（Linux 和 macOS）
 export function setExecutablePermission() {
+    const curPlatform = platform();
+    if (curPlatform !== 'linux' && curPlatform !== 'darwin') {
+        console.log(`当前平台 ${curPlatform} 不需要设置可执行权限`);
+        return; // 仅在 Linux 和 macOS 上设置可执行权限
+    }
     const executablePath = getExecutablePath();
     fs.chmod(executablePath, '755', (err) => {
         if (err) {
