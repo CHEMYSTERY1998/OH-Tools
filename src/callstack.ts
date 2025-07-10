@@ -4,7 +4,7 @@ import * as path from 'path';
 import * as child_process from 'child_process';
 
 import { OHLOG } from './logger';
-import { extensionContext } from './extension';
+import { getContext } from './context';
 
 function collectZippedSharedLibraries(directory: string): Record<string, string> {
     const zippedLibraries: Record<string, string> = {};
@@ -118,7 +118,7 @@ async function parseCallStack(addr2linePath: string, libraryPaths: Record<string
 
 export async function processCallStack() {
     // 从config中获取信息
-    const webviewState = extensionContext.workspaceState.get<{ addr2line: string; outpath: string; callstack: string }>('webviewState');
+    const webviewState = getContext().workspaceState.get<{ addr2line: string; outpath: string; callstack: string }>('webviewState');
     if (!webviewState) {
         console.log('webviewState does not exist or is undefined');
         return;

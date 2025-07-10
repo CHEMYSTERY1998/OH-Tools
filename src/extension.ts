@@ -1,12 +1,11 @@
 import * as vscode from 'vscode';
 
 import { Commander } from './command';
-import {webView} from './webProvider';
-
-export let extensionContext: vscode.ExtensionContext;
+import { webView } from './webProvider';
+import { setContext } from './context'
 
 export function activate(context: vscode.ExtensionContext) {
-    extensionContext = context; // 现在可以重新赋值了
+    setContext(context);
     console.log('Congratulations, your extension "oh-tools" is now active!');
     // 获取GTest单个用例命令
     const getSingleTest = vscode.commands.registerCommand('oh-tools.getSingleTest', Commander.getSingleTestCommand);

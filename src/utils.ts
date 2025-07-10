@@ -5,7 +5,7 @@ import { platform } from "os";
 import { exec } from 'child_process';
 
 import { processCallStack } from './callstack';
-import { extensionContext } from './extension'; // 引入扩展上下文
+import { getContext } from './context'; // 引入扩展上下文
 
 /**
  * 获取当前活动编辑器中光标所在行的文本内容
@@ -125,7 +125,7 @@ export function handleMessage(message: any) {
         console.log('addr2line:', message.addr2line);
         console.log('outpath:', message.outpath);
         console.log('callstack:', message.callstack);
-        extensionContext.workspaceState.update('webviewState', {
+        getContext().workspaceState.update('webviewState', {
             addr2line: message.addr2line,
             outpath: message.outpath,
             callstack: message.callstack
@@ -134,13 +134,13 @@ export function handleMessage(message: any) {
         parseCallStack(message.addr2line, message.outpath, message.callstack);
     } else if (message.type === 'stateUpdate') {
         // 接收到 Webview 状态更新
-        extensionContext.workspaceState.update('webviewState', {
+        getContext().workspaceState.update('webviewState', {
             addr2line: message.addr2line,
             outpath: message.outpath,
             callstack: message.callstack
         });
     } else if (message.type === 'getState') {
-        const newState = extensionContext.workspaceState.get('webviewState');
+        const newState = getContext().workspaceState.get('webviewState');
         if (panel) {
             panel.webview.postMessage({
                 command: 'returnState',
@@ -156,7 +156,7 @@ export function getWebviewContent(initialState: any): string {
         return cachedHtml;
     }
     const initState = JSON.stringify(initialState || {});
-    const filePath = path.join(extensionContext.extensionPath, 'media', 'webview.html');
+    const filePath = path.join(getContext().extensionPath, 'media', 'webview.html');
     try {
         let html = fs.readFileSync(filePath, 'utf8');
         cachedHtml = html.replace(/\/\/\[strip\]/g, "")  // 删除修剪注释行
@@ -188,7 +188,7 @@ export function setCallInfoCommand() {
     );
 
     // 从全局状态中读取之前保存的数据
-    const savedState = extensionContext.workspaceState.get('webviewState');
+    const savedState = getContext().workspaceState.get('webviewState');
     panel.webview.html = getWebviewContent(savedState).replace('600px', '300px'); // 设置 HTML 内容
 
     // 监听消息事件
@@ -198,7 +198,7 @@ export function setCallInfoCommand() {
     panel.onDidChangeViewState(() => {
         if (panel && panel.visible) {
             console.log('页面切换到可见状态，刷新页面...');
-            const newState = extensionContext.workspaceState.get('webviewState');
+            const newState = getContext().workspaceState.get('webviewState');
             panel.webview.html = getWebviewContent(newState).replace('600px', '300px'); // 设置 HTML 内容
         }
     });
