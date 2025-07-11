@@ -2,9 +2,23 @@ import * as vscode from 'vscode';
 
 export class OutputLogger {
     private outputChannel: vscode.OutputChannel;
-
+    private openOut: boolean = false;
     constructor(channelName: string) {
         this.outputChannel = vscode.window.createOutputChannel(channelName);
+        const config = vscode.workspace.getConfiguration('ohTools');
+        const featureXEnabled = config.get<boolean>('enableLOG', false);
+        this.openOut = featureXEnabled;
+
+        // 监听配置变更
+        vscode.workspace.onDidChangeConfiguration((event) => {
+            if (event.affectsConfiguration('ohTools.enableLOG')) {
+                const config = vscode.workspace.getConfiguration('ohTools');
+                const featureXEnabled = config.get<boolean>('enableLOG', false);
+                vscode.window.showInformationMessage(`日志开关变更: ${featureXEnabled}`);
+                this.openOut = featureXEnabled;
+            }
+        });
+        
     }
 
     /**
@@ -21,6 +35,9 @@ export class OutputLogger {
      * @param args 多个日志信息
      */
     public log(...args: any[]): void {
+        if (!this.openOut) {
+            return; // 如果未开启日志功能，则不输出
+        }
         const timestamp = new Date().toISOString();
         const message = args.map(arg => {
             try {
@@ -30,7 +47,6 @@ export class OutputLogger {
                 return String(arg);
             }
         }).join(''); // 用""连接所有参数
-
         this.outputChannel.appendLine(`[${timestamp}] ${message}`);
     }
     /**
