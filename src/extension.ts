@@ -3,12 +3,10 @@ import * as vscode from 'vscode';
 import { Commander } from './command';
 import { webView } from './webProvider';
 import { setContext } from './context'
-import { setExecutablePermission } from './callstack';
 
 export function activate(context: vscode.ExtensionContext) {
     setContext(context);
-    setExecutablePermission();
-    console.log('Congratulations, your extension "oh-tools" is now active!');
+    vscode.window.showInformationMessage('Congratulations, your extension "oh-tools" is now active!');
     // 获取GTest单个用例命令
     const getSingleTest = vscode.commands.registerCommand('oh-tools.getSingleTest', Commander.getSingleTestCommand);
     // 获取当前活动行号

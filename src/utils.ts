@@ -6,6 +6,7 @@ import * as os from 'os';
 import { exec } from 'child_process';
 
 import { getContext } from './context'; // 引入扩展上下文
+import { OHLOG } from './logger';
 
 /**
  * 获取当前活动编辑器中光标所在行的文本内容
@@ -69,6 +70,9 @@ async function validateBinaryPath(BinPath: string): Promise<boolean> {
  * @returns 返回路径是否合法以及类型（文件/目录/无效）
  */
 export function validatePath(inputPath: string): { type: 'file' | 'directory' | 'invalid' } {
+    if (!inputPath || inputPath.trim() === "") {
+        return { type: 'invalid' };
+    }
     try {
         const resolvedPath = path.resolve(inputPath); // 解析成绝对路径
         const stats = fs.statSync(resolvedPath); // 获取路径信息
@@ -121,7 +125,7 @@ async function setPathToConfig(configPath: string, defaultPath: string, fileType
 export function getTerminalType(): string {
     const platform = os.platform();  // 获取当前操作系统
     const terminalShell = vscode.env.shell; // 获取当前终端的 shell 类型
-    console.log(`Current terminal shell: ${terminalShell}`);
+    OHLOG.instance.log(`Current terminal shell: ${terminalShell}`);
 
     if (platform === 'win32') {
         // 如果是 Windows 系统

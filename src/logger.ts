@@ -8,14 +8,31 @@ export class OutputLogger {
     }
 
     /**
-     * 记录日志信息到输出通道
-     * @param message 日志信息
+     * 输出日志信息到输出通道并显示
+     * @param args 多个日志信息
      */
-    public log(message: string): void {
-        const timestamp = new Date().toISOString();
-        this.outputChannel.appendLine(`[${timestamp}] ${message}`);
+    public outputLog(...args: any[]): void {
+        this.log(...args);
+        this.show();
     }
 
+    /**
+     * 记录日志信息到输出通道
+     * @param args 多个日志信息
+     */
+    public log(...args: any[]): void {
+        const timestamp = new Date().toISOString();
+        const message = args.map(arg => {
+            try {
+                // 尝试转换为字符串（支持对象/数组）
+                return typeof arg === 'string' ? arg : JSON.stringify(arg);
+            } catch {
+                return String(arg);
+            }
+        }).join(''); // 用""连接所有参数
+
+        this.outputChannel.appendLine(`[${timestamp}] ${message}`);
+    }
     /**
      * 显示输出通道
      */

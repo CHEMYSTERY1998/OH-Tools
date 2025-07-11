@@ -105,7 +105,18 @@
         "id": "OhToolMenu",
         "label": "OHTools"
       }
-    ]
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "OH Tools 插件配置",
+      "properties": {
+        "ohTools.enableLOG": {
+          "type": "boolean",
+          "default": false,
+          "description": "是否启用日志记录"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

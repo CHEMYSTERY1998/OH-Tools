@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { getContext } from './context';
 import { parseCallStack } from './callstack';
+import { OHLOG } from './logger';
 
 /*
   用于创建主测栏的webview
@@ -36,9 +37,9 @@ export class webView implements vscode.WebviewViewProvider {
 export function handleMessage(message: any) {
     if (message.type === 'submit') {
         // 处理提交
-        console.log('addr2line:', message.addr2line);
-        console.log('outpath:', message.outpath);
-        console.log('callstack:', message.callstack);
+        OHLOG.instance.log('addr2line:', message.addr2line);
+        OHLOG.instance.log('outpath:', message.outpath);
+        OHLOG.instance.log('callstack:', message.callstack);
         getContext().workspaceState.update('webviewState', {
             addr2line: message.addr2line,
             outpath: message.outpath,
@@ -77,7 +78,7 @@ export function getWebviewContent(initialState: any): string {
             .replace(/{{initState}}/g, initState); // 替换变量
         return cachedHtml;
     } catch (err) {
-        console.error('Failed to load webview HTML', err);
+        OHLOG.instance.log('Failed to load webview HTML', err);
         return `<html><body><h1>Error loading HTML</h1></body></html>`;
     }
 }
@@ -87,7 +88,7 @@ let panel: vscode.WebviewPanel | undefined = undefined; // 单例模式
 export function createParseWebPanel() {
     // 如果已有面板，则显示
     if (panel) {
-        console.log('页面再次打开...');
+        OHLOG.instance.log('页面再次打开...');
         panel.reveal(vscode.ViewColumn.One);
         return;
     }
@@ -111,7 +112,7 @@ export function createParseWebPanel() {
     // 监听 Webview 面板的状态变化事件
     panel.onDidChangeViewState(() => {
         if (panel && panel.visible) {
-            console.log('页面切换到可见状态，刷新页面...');
+            OHLOG.instance.log('页面切换到可见状态，刷新页面...');
             const newState = getContext().workspaceState.get('webviewState');
             panel.webview.html = getWebviewContent(newState).replace('600px', '300px'); // 设置 HTML 内容
         }
@@ -119,6 +120,6 @@ export function createParseWebPanel() {
 
     panel.onDidDispose(() => {
         panel = undefined;
-        console.log('页面关闭...');
+        OHLOG.instance.log('页面关闭...');
     });
 }

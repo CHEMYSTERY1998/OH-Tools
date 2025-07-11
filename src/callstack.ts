@@ -7,6 +7,7 @@ import { platform } from 'os';
 
 import { getContext } from './context';
 import { getTerminalType, validatePath, winPathToGitBashPath } from './utils';
+import { OHLOG } from './logger';
 
 function collectZippedSharedLibraries(directory: string): Record<string, string> {
     const zippedLibraries: Record<string, string> = {};
@@ -78,7 +79,7 @@ function getCallStackMap(callStackInfo: string): Record<string, [string, string]
                 const address = match[2];
                 const libraryName = match[3];
                 callStackMap[address] = [frameNumber, libraryName];
-                console.log(`Parsed call stack: ${frameNumber} ${address} ${libraryName}`);
+                OHLOG.instance.log(`Parsed call stack: ${frameNumber} ${address} ${libraryName}`);
             }
         }
     }
@@ -102,13 +103,13 @@ async function parseCallStackInner(addr2linePath: string, libraryPaths: Record<s
         }
         try {
             // 使用 execSync 执行命令并捕获输出
-            console.log(`${addr2linePath} -Cfpie ${libraryPath} ${address}`);
+            OHLOG.instance.log(`${addr2linePath} -Cfpie ${libraryPath} ${address}`);
             const stdout = child_process.execSync(`${addr2linePath} -Cfpie ${libraryPath} ${address}`).toString();
             if (stdout) {
                 formattedCallStack += `\x1b[31m${callStackMap[address][0]}\x1b[32m ${stdout}\x1b[0m`;
             }
         } catch (error) {
-            console.error(`Error processing address ${address}:`, error);
+            OHLOG.instance.log(`Error processing address ${address}:${error}`);
         }
     }
 
@@ -134,7 +135,7 @@ export async function processCallStack() {
     // 从config中获取信息
     const webviewState = getContext().workspaceState.get<{ addr2line: string; outpath: string; callstack: string }>('webviewState');
     if (!webviewState) {
-        console.log('webviewState does not exist or is undefined');
+        OHLOG.instance.log('webviewState does not exist or is undefined');
         return;
     }
     const addr2linePath = isPluginAddr2lineAvailable ? getExecutablePath() : webviewState.addr2line;
@@ -145,7 +146,7 @@ export async function processCallStack() {
     const executablePath = path.join(outPath, 'exe.unstripped');
     const sharedLibraries = fs.existsSync(sharedLibraryPath)
         ? collectZippedSharedLibraries(sharedLibraryPath)
-        : collectExecutableFiles(outPath);
+        : collectZippedSharedLibraries(outPath);
 
     const executables = fs.existsSync(executablePath)
         ? collectExecutableFiles(executablePath)
@@ -160,22 +161,23 @@ let isPluginAddr2lineAvailable: boolean | undefined = undefined;
 export function parseCallStack(addr2linePath: string, outPath: string, callstackInfo: string) {
     if (isPluginAddr2lineAvailable === undefined) {
         try {
+            setExecutablePermission();
             let pluginBin = getExecutablePath(); 
             // 使用 execSync 执行命令并捕获输出
-            console.log(`${pluginBin} --help`);
+            OHLOG.instance.log(`${pluginBin} --help`);
             const stdout = child_process.execSync(`${pluginBin} --help`).toString();
             if (stdout) {
-                console.log("插件自带的 addr2line 可用");
+                OHLOG.instance.log("插件自带的 addr2line 可用");
                 isPluginAddr2lineAvailable = true; // 如果命令执行成功，则认为插件自带的 addr2line 可用
             }
         } catch (error) {
             isPluginAddr2lineAvailable = false;
-            console.error(`Error checking plugin addr2line availability:`, error);
+            OHLOG.instance.log(`Error checking plugin addr2line availability:${error}`);
         }
     }
     if (isPluginAddr2lineAvailable) {
         addr2linePath = getExecutablePath(); // 使用插件自带的 addr2line
-        console.log(`使用插件自带的 addr2line: ${addr2linePath}`);
+        OHLOG.instance.log(`使用插件自带的 addr2line: ${addr2linePath}`);
     }
 
     if (addr2linePath === undefined || outPath === undefined || callstackInfo === undefined) {
@@ -184,20 +186,23 @@ export function parseCallStack(addr2linePath: string, outPath: string, callstack
     }
     if (validatePath(addr2linePath).type !== 'file') {
         vscode.window.showErrorMessage("addr2line路径错误,请检查!");
-        console.error(`addr2line路径错误: ${addr2linePath}`);
+        OHLOG.instance.log(`addr2line路径错误: ${addr2linePath}`);
         return;
     }
     if (validatePath(outPath).type !== 'directory') {
         vscode.window.showErrorMessage("out路径需要包含形如generic_generic_arm_64only/general_all_phone_standard");
-        console.error(`out路径错误: ${outPath}`);
+        OHLOG.instance.log(`out路径错误: ${outPath}`);
         return;
+    } else {
+        OHLOG.instance.log(`out路径: ${outPath}`);
+        OHLOG.instance.log(`out路径类型: ${validatePath(outPath).type}`);
     }
     if (callstackInfo.trim() === '') {
         vscode.window.showErrorMessage("调用栈信息不能为空！");
-        console.error('调用栈信息不能为空');
+        OHLOG.instance.log('调用栈信息不能为空');
         return;
     }
-    console.log('开始解析调用栈信息...');
+    OHLOG.instance.log('开始解析调用栈信息...');
     processCallStack();
 }
 
@@ -220,15 +225,15 @@ export function getExecutablePath() {
 export function setExecutablePermission() {
     const curPlatform = platform();
     if (curPlatform !== 'linux' && curPlatform !== 'darwin') {
-        console.log(`当前平台 ${curPlatform} 不需要设置可执行权限`);
+        OHLOG.instance.log(`当前平台 ${curPlatform} 不需要设置可执行权限`);
         return; // 仅在 Linux 和 macOS 上设置可执行权限
     }
     const executablePath = getExecutablePath();
     fs.chmod(executablePath, '755', (err) => {
         if (err) {
-            console.error(`Failed to set executable permission for ${executablePath}:`, err);
+            OHLOG.instance.log(`Failed to set executable permission for ${executablePath}:${err}`);
         } else {
-            console.log(`Set executable permission for ${executablePath}`);
+            OHLOG.instance.log(`Set executable permission for ${executablePath}`);
         }
     });
 }
