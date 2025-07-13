@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 
 import { Commander } from './command';
 import { webView } from './webProvider';
-import { setContext } from './context'
+import { setContext } from './context';
 
 export function activate(context: vscode.ExtensionContext) {
     setContext(context);
@@ -19,6 +19,13 @@ export function activate(context: vscode.ExtensionContext) {
     const sortZtoA = vscode.commands.registerCommand('oh-tools.sortZtoA', Commander.sortZtoACommand);
     // getCallLine
     const getCallLine = vscode.commands.registerCommand('oh-tools.getCallLine', Commander.getCallLineCommand);
+
+    // 注册高亮相关命令
+    const addHighlight = vscode.commands.registerCommand('oh-tools.addHighlight', Commander.addHighlightCallBack);
+    const removeAllHighlights = vscode.commands.registerCommand('oh-tools.removeAllHighlights', Commander.removeAllHighlights);
+
+
+
 
     // 注册主侧栏面板
     const webview = vscode.window.registerWebviewViewProvider('myWebView', webView.getInstance(context),

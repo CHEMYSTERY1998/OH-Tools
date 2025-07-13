@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 
 import { getCurrentLineNum, getCurrentLineText } from './utils';
 import { createParseWebPanel } from './webProvider';
-
+import { Hightlighter } from './highlight';
 
 export namespace Commander {
 
@@ -64,5 +64,13 @@ export namespace Commander {
 
     export function getCallLineCommand() {
         createParseWebPanel();
+    }
+
+    export function addHighlightCallBack() {
+        Hightlighter.getInstance().addHighLight(vscode.window.activeTextEditor);
+    }
+
+    export function removeAllHighlights() {
+        Hightlighter.getInstance().removeAllHighLight(vscode.window.activeTextEditor);
     }
 }

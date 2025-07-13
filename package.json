@@ -11,7 +11,10 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onCommand:oh-tools.addHighlight",
+    "onCommand:oh-tools.removeAllHighlights"
+  ],
   "main": "./out/extension.js",
   "files": [
     "resources"
@@ -63,6 +66,29 @@
         "command": "oh-tools.getCallLine",
         "title": "解析调用栈信息",
         "category": "getCallLine"
+      },
+      {
+        "command": "oh-tools.addHighlight",
+        "title": "高亮选择内容",
+        "category": "OhToolMenu",
+        "when": "editorTextFocus && ohTools.highlight"
+      },
+      {
+        "command": "oh-tools.removeAllHighlights",
+        "title": "移除所有高亮",
+        "when": "editorTextFocus && ohTools.highlight"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "oh-tools.addHighlight",
+        "key": "f8",
+        "when": "editorTextFocus && ohTools.highlight"
+      },
+      {
+        "command": "oh-tools.removeAllHighlights",
+        "key": "f9",
+        "when": "editorTextFocus && ohTools.highlight"
       }
     ],
     "menus": {
@@ -97,6 +123,14 @@
         {
           "command": "oh-tools.sortZtoA",
           "group": "group2"
+        },
+        {
+          "command": "oh-tools.addHighlight",
+          "group": "group3"
+        },
+        {
+          "command": "oh-tools.removeAllHighlights",
+          "group": "group3"
         }
       ]
     },
@@ -114,6 +148,64 @@
           "type": "boolean",
           "default": false,
           "description": "是否启用日志记录"
+        },
+        "ohTools.colors": {
+          "type": "array",
+          "default": [
+            {
+              "light": "#00FF00",
+              "dark": "#4875bf"
+            },
+            {
+              "light": "#BF3EFF",
+              "dark": "#a115a1"
+            },
+            {
+              "light": "#00FA9A",
+              "dark": "#c27e08"
+            },
+            {
+              "light": "#00FFFF",
+              "dark": "#178f63"
+            },
+            {
+              "light": "#FF7F00",
+              "dark": "#b15e3e"
+            },
+            {
+              "light": "#FF0000",
+              "dark": "#26831c"
+            },
+            {
+              "light": "#FFD700",
+              "dark": "#196983"
+            }
+          ],
+          "description": "Oh高亮颜色配置项"
+        },
+        "ohTools.highlight": {
+          "type": "boolean",
+          "default": false,
+          "description": "是否启用高亮功能"
+        },
+        "ohTools.highlightSetting": {
+          "type": "object",
+          "default": {
+            "fullMatch": true,
+            "ignoreCase": false
+          },
+          "properties": {
+            "fullMatch": {
+              "type": "boolean",
+              "default": true,
+              "description": "是否全词匹配（仅在高亮启用时有效）"
+            },
+            "ignoreCase": {
+              "type": "boolean",
+              "default": false,
+              "description": "是否忽略大小写（仅在高亮启用时有效）"
+            }
+          }
         }
       }
     }

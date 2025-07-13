@@ -157,3 +157,24 @@ export function winPathToGitBashPath(filePath: string): string {
     }
     return filePath;
 }
+
+// 获取当选中的文本或光标所在单词
+export function getSelectedTextOrWord(editor: vscode.TextEditor | undefined): string | undefined {
+    if (!editor) {
+        return undefined;
+    }
+    let word: string = editor.document.getText(editor.selection);
+    if (!word) {
+        // 如果没有选中文本，则获取光标所在单词
+        const range = editor.document.getWordRangeAtPosition(editor.selection.start);
+        if (range) {
+            word = editor.document.getText(range);
+        }
+    }
+    if (!word) {
+        vscode.window.showInformationMessage('Nothing selected!');
+        return;
+    }
+
+    return word.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, '\\$1'); // 转义正则特殊字符
+}
