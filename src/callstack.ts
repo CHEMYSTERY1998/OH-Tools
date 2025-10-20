@@ -9,26 +9,42 @@ import { getContext } from './context';
 import { getTerminalType, validatePath, winPathToGitBashPath } from './utils';
 import { OHLOG } from './logger';
 
+function readDirectoryRecursively(dir: string): string[] {
+    const files: string[] = [];
+    const directories: string[] = [];
+
+    let entries: string[];
+    try {
+        entries = fs.readdirSync(dir);
+    } catch (err) {
+        OHLOG.instance.log(`无法读取目录: ${dir}`, err);
+        return files;
+    }
+
+    for (const entry of entries) {
+        const entryPath = path.join(dir, entry);
+        let stat: fs.Stats;
+        try {
+            stat = fs.statSync(entryPath);
+        } catch (err) {
+            OHLOG.instance.log(`无法获取文件信息: ${entryPath}`, err);
+            continue;
+        }
+
+        if (stat.isDirectory()) {
+            directories.push(entryPath);
+        } else {
+            files.push(entryPath);
+        }
+    }
+    for (const subDir of directories) {
+        files.push(...readDirectoryRecursively(subDir));
+    }
+    return files;
+}
+
 function collectZippedSharedLibraries(directory: string): Record<string, string> {
     const zippedLibraries: Record<string, string> = {};
-    const readDirectoryRecursively = (dir: string): string[] => {
-        const files: string[] = [];
-        const directories: string[] = [];
-        const entries = fs.readdirSync(dir);
-        for (const entry of entries) {
-            const entryPath = path.join(dir, entry);
-            if (fs.statSync(entryPath).isDirectory()) {
-                directories.push(entryPath);
-            } else {
-                files.push(entryPath);
-            }
-        }
-        for (const subDir of directories) {
-            files.push(...readDirectoryRecursively(subDir));
-        }
-        return files;
-    };
-
     const allFiles = readDirectoryRecursively(directory);
     for (const file of allFiles) {
         if (file.endsWith('.z.so')) {
@@ -41,24 +57,6 @@ function collectZippedSharedLibraries(directory: string): Record<string, string>
 
 function collectExecutableFiles(directory: string): Record<string, string> {
     const executableFiles: Record<string, string> = {};
-    const readDirectoryRecursively = (dir: string): string[] => {
-        const files: string[] = [];
-        const directories: string[] = [];
-        const entries = fs.readdirSync(dir);
-        for (const entry of entries) {
-            const entryPath = path.join(dir, entry);
-            if (fs.statSync(entryPath).isDirectory()) {
-                directories.push(entryPath);
-            } else {
-                files.push(entryPath);
-            }
-        }
-        for (const subDir of directories) {
-            files.push(...readDirectoryRecursively(subDir));
-        }
-        return files;
-    };
-
     const allFiles = readDirectoryRecursively(directory);
     for (const file of allFiles) {
         const fileName = path.basename(file);
@@ -162,7 +160,7 @@ export function parseCallStack(addr2linePath: string, outPath: string, callstack
     if (isPluginAddr2lineAvailable === undefined) {
         try {
             setExecutablePermission();
-            let pluginBin = getExecutablePath(); 
+            let pluginBin = getExecutablePath();
             // 使用 execSync 执行命令并捕获输出
             OHLOG.instance.log(`${pluginBin} --help`);
             const stdout = child_process.execSync(`${pluginBin} --help`).toString();
