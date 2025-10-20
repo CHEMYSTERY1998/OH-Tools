@@ -156,50 +156,75 @@ export async function processCallStack() {
 }
 
 let isPluginAddr2lineAvailable: boolean | undefined = undefined;
-export function parseCallStack(addr2linePath: string, outPath: string, callstackInfo: string) {
-    if (isPluginAddr2lineAvailable === undefined) {
-        try {
-            setExecutablePermission();
-            let pluginBin = getExecutablePath();
-            // 使用 execSync 执行命令并捕获输出
-            OHLOG.instance.log(`${pluginBin} --help`);
-            const stdout = child_process.execSync(`${pluginBin} --help`).toString();
-            if (stdout) {
-                OHLOG.instance.log("插件自带的 addr2line 可用");
-                isPluginAddr2lineAvailable = true; // 如果命令执行成功，则认为插件自带的 addr2line 可用
-            }
-        } catch (error) {
-            isPluginAddr2lineAvailable = false;
-            OHLOG.instance.log(`Error checking plugin addr2line availability:${error}`);
+
+// 尝试检测插件自带的 addr2line 是否可用
+function checkPluginAddr2line(): boolean {
+    try {
+        setExecutablePermission();
+        const pluginBin = getExecutablePath();
+        OHLOG.instance.log(`${pluginBin} --help`);
+
+        const stdout = child_process.execSync(`${pluginBin} --help`).toString();
+        if (stdout) {
+            OHLOG.instance.log("插件自带的 addr2line 可用");
+            return true;
         }
+    } catch (error) {
+        OHLOG.instance.log(`检测插件 addr2line 可用性失败: ${error}`);
     }
-    if (isPluginAddr2lineAvailable) {
-        addr2linePath = getExecutablePath(); // 使用插件自带的 addr2line
-        OHLOG.instance.log(`使用插件自带的 addr2line: ${addr2linePath}`);
+    return false;
+}
+
+// 获取可用的 addr2line 路径
+function resolveAddr2linePath(): string | undefined {
+    if (isPluginAddr2lineAvailable === undefined) {
+        isPluginAddr2lineAvailable = checkPluginAddr2line();
     }
 
-    if (addr2linePath === undefined || outPath === undefined || callstackInfo === undefined) {
+    if (isPluginAddr2lineAvailable) {
+        const path = getExecutablePath();
+        OHLOG.instance.log(`使用插件自带的 addr2line: ${path}`);
+        return path;
+    }
+
+    const config = vscode.workspace.getConfiguration('ohTools');
+    const userPath = config.get<string>('addr2linePath', '');
+    OHLOG.instance.log(`使用用户配置的 addr2line: ${userPath}`);
+    return userPath;
+}
+
+// 解析调用栈
+export function parseCallStack(outPath: string, callstackInfo: string) {
+    const addr2linePath = resolveAddr2linePath();
+
+    // 基本参数校验
+    if (!addr2linePath || !outPath || !callstackInfo) {
         vscode.window.showErrorMessage("请输入完整的路径和调用栈信息！");
         return;
     }
-    if (validatePath(addr2linePath).type !== 'file') {
-        vscode.window.showErrorMessage("addr2line路径错误,请检查!");
-        OHLOG.instance.log(`addr2line路径错误: ${addr2linePath}`);
+
+    // 校验 addr2line 路径
+    const addr2lineStat = validatePath(addr2linePath);
+    if (addr2lineStat.type !== 'file') {
+        vscode.window.showErrorMessage("addr2line 路径错误，请检查！");
+        OHLOG.instance.log(`addr2line 路径错误: ${addr2linePath}`);
         return;
     }
+
+    // 校验 outPath
     if (validatePath(outPath).type !== 'directory') {
-        vscode.window.showErrorMessage("out路径需要包含形如generic_generic_arm_64only/general_all_phone_standard");
-        OHLOG.instance.log(`out路径错误: ${outPath}`);
+        vscode.window.showErrorMessage("out 路径需要包含形如 generic_generic_arm_64only/general_all_phone_standard");
+        OHLOG.instance.log(`out 路径错误: ${outPath}`);
         return;
-    } else {
-        OHLOG.instance.log(`out路径: ${outPath}`);
-        OHLOG.instance.log(`out路径类型: ${validatePath(outPath).type}`);
     }
+
     if (callstackInfo.trim() === '') {
         vscode.window.showErrorMessage("调用栈信息不能为空！");
         OHLOG.instance.log('调用栈信息不能为空');
         return;
     }
+
+    OHLOG.instance.log(`out 路径: ${outPath}`);
     OHLOG.instance.log('开始解析调用栈信息...');
     processCallStack();
 }

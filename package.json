@@ -114,6 +114,11 @@
           "type": "boolean",
           "default": false,
           "description": "是否启用日志记录"
+        },
+        "ohTools.addr2linePath": {
+          "type": "string",
+          "default": "",
+          "description": "addr2line 工具的路径"
         }
       }
     }

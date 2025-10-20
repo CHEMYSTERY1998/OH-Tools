@@ -85,11 +85,6 @@
 <body>
     <div class="container">
         <div class="form-group">
-            <label for="addr2line" title="请输入 addr2line 的路径,ubuntu或者windows平台可以不用输入">addr2line路径</label>
-            <input type="text" id="addr2line" name="addr2line" value="可不填(若插件自带llvm-addr2line不可用,需要自己添加路径)">
-        </div>
-
-        <div class="form-group">
             <label for="outpath" title="请输入编译产物绝对路径,如/code/OpenHarmony/out/rk3568/">编译产物路径</label>
             <input type="text" id="outpath" name="outpath" title="请输入编译产物绝对路径,如/code/out/rk3568/">
         </div>
@@ -117,7 +112,6 @@
                     console.log('收到来自扩展的数据:', initialState);
                     if (initialState) {
                         console.log('收到来自扩展的数据2:', initialState);
-                        document.getElementById('addr2line').value = initialState.addr2line || '';
                         document.getElementById('outpath').value = initialState.outpath || '';
                         document.getElementById('callstack').value = initialState.callstack || '';
                     }
@@ -126,7 +120,6 @@
 
             function saveState() {
                 const state = {
-                    addr2line: document.getElementById('addr2line').value,
                     outpath: document.getElementById('outpath').value,
                     callstack: document.getElementById('callstack').value
                 };
@@ -137,18 +130,15 @@
             }
 
             // 监听所有输入变化，保存状态
-            document.getElementById('addr2line').addEventListener('input', saveState);
             document.getElementById('outpath').addEventListener('input', saveState);
             document.getElementById('callstack').addEventListener('input', saveState);
 
             // 定义全局的提交方法，供按钮调用
             window.handleSubmit = function () {
-                const addr2line = document.getElementById('addr2line').value;
                 const outpath = document.getElementById('outpath').value;
                 const callstack = document.getElementById('callstack').value;
                 vscode.postMessage({
                     type: 'submit',
-                    addr2line,
                     outpath,
                     callstack
                 });

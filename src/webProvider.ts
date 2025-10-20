@@ -41,16 +41,14 @@ export function handleMessage(message: any) {
         OHLOG.instance.log('outpath:', message.outpath);
         OHLOG.instance.log('callstack:', message.callstack);
         getContext().workspaceState.update('webviewState', {
-            addr2line: message.addr2line,
             outpath: message.outpath,
             callstack: message.callstack
-        });        
+        });
         // 解析调用栈信息
-        parseCallStack(message.addr2line, message.outpath, message.callstack);
+        parseCallStack(message.outpath, message.callstack);
     } else if (message.type === 'stateUpdate') {
         // 接收到 Webview 状态更新
         getContext().workspaceState.update('webviewState', {
-            addr2line: message.addr2line,
             outpath: message.outpath,
             callstack: message.callstack
         });
